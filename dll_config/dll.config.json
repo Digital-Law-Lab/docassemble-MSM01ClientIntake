@@ -1,0 +1,13 @@
+{
+  "API_keys": {
+    "dev_api_key": {
+      "api_key": "TvhvsNfzJ1LEJfgJuqUpzxluJSByJBaR",
+      "api_root": "https://dev.dll.org.au/da/api"
+    },
+    "production_api_key": {
+      "api_key": "zPV46t6ADUg4qytTYftGJUzdXlI4VMwn",
+      "api_root": "https://app.dll.org.au/da/api"
+    }
+  },
+  "DA_playground_projects": ["MSM01ClientIntake"]
+}

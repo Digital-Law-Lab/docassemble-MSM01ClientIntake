@@ -3,11 +3,11 @@ event: M_final_screen
 question: Thank you for using the MSM Online Client Intake Form
 subquestion: |
   Thank you for using the MSM Online Client Intake Form!
-  
+
   Your responses are shown in the table below.
-  
+
   - If you have made a mistake, click the **Restart** button to fix the mistake.
-  
+
   - If you are satisfied with the information you have provided, click **Exit** and you will be contacted as soon as possible to organise an appointment time with a member of the MSM Legal team. A copy of your responses will also be sent to the email address you have provided.
    
   <html>
@@ -79,7 +79,7 @@ subquestion: |
     %endif
     Purpose of stay in Australia | ${ migration_main_app_reason_stay }=
     %endif
-  
+
     %if is_user_main_applicant == 'No':
     Questions|Your Details
     ------------|-------------
@@ -124,7 +124,7 @@ buttons:
   - 'No'
 terms:
   Main Applicant: |
-    The Main Applicant is the main person needing help with their visa or other migration issue.
+    Main Applicant is the person needing help with their visa or other migration issue. If you are applying on someone else's behalf, you are not the Main Applicant.
 ---
 #If user is the Main Applicant this screen shall ask if there are any family members applying/migrating with them - this is where the loop may come in handy
 question: Family Members
@@ -132,8 +132,8 @@ subquestion: |
   Will any family be coming with you?
 field: migration_user_family_members
 buttons:
-  - "Yes"
-  - "No"
+  - 'Yes'
+  - 'No'
 ---
 #If user is NOT the Main Applicant this screen shall ask if there are any family members applying/migrating with the Main Applicant - this is where the loop may come in handy
 question: Family Members
@@ -141,10 +141,10 @@ subquestion: |
   Does the Main Applicant have any family coming with them?
 field: migration_main_app_family_members
 buttons:
-  - "Yes"
-  - "No"
+  - 'Yes'
+  - 'No'
 ---
-#If the user is the main applicant this will ask for their personal details 
+#If the user is the main applicant this will ask for their personal details
 question: Please fill out your details below.
 subquestion: |
 fields:
@@ -170,7 +170,7 @@ fields:
     required: False
     help: |
       E.g., Unit 12, Apartment 6
-  - Suburb/City: migration_user_city                        
+  - Suburb/City: migration_user_city
     required: False
     default: Adelaide
     help: |
@@ -200,7 +200,7 @@ fields:
     help: |
       E.g. 0491579455
 ---
-#This code sets the default country for phone numbers 
+#This code sets the default country for phone numbers
 code: |
   if not migration_user_phone_international:
     migration_user_phone_country = 'Aus'
@@ -210,7 +210,7 @@ objects:
   - migration_documents_to_send: DAList.using(auto_gather = False)
 ---
 #This code block controls the documents sent via email to the user and MSM Legal for the migration path
-code:  | 
+code: |
   migration_documents_to_send.append(MSM_Legal_Answer_Template_Migration)
   migration_documents_to_send.append(migration_user_documents)
   migration_documents_to_send.gathered=True
@@ -228,26 +228,26 @@ subject: |
   MSM Legal Client Intake Form for ${ migration_user_first_name } ${ migration_user_last_name }.
 content: |
   Hello ${ migration_user_first_name } ${ migration_user_last_name }, 
-  
+
   Thank you for contacting MSM Legal regarding your matter. We have received your enquiry and one of our team members will be in touch shortly.
-  
+
   For your reference, please find attached a copy of what we have recieved.
-  
+
   Should you have any questions or concerns, please do not hesitate to contact us on (08) 8161 5088 or via email at mail@msmlegal.com.au
-  
+
   Kind Regards, 
-  
+
   MSM Legal
 ---
 #This is the code which attaches the pdf to the email the user recieves
-attachment: 
-  - name: legal answers 
+attachment:
+  - name: legal answers
     filename: ${ migration_user_first_name } ${ migration_user_last_name } Answers
     variable name: MSM_Legal_Answer_Template_Migration
-    description: | 
+    description: |
       contains the answers entered by the user
     docx template file: MSM_Legal_Answer_Template_Migration.docx
-    valid formats: 
+    valid formats:
       - pdf
 ---
 #This will ask the user for the country of issue for their passport - it is separate from the rest of the information so it will not be asked if the user is NOT the Main Applicant
@@ -262,18 +262,18 @@ fields:
 ---
 #If User is NOT the main applicant then this screen will ask for their relationship to the MA
 question: How are you related to the Main Applicant?
-fields: 
-  - Relationship: user_relationship_with_main_app 
+fields:
+  - Relationship: user_relationship_with_main_app
     required: False
     hint: |
-       E.g., Friend, Child
+      E.g., Friend, Child
 ---
 # These questions are asked if the user is NOT the main applicant
-question:  Please fill out the {Main Applicant}'s personal information below.
+question: Please fill out the {Main Applicant}'s personal information below.
 subquestion: |
 fields:
   - Their First Name: migration_main_app_first_name
-    default: Basanti 
+    default: Basanti
   - Other Given Name(s): migration_main_app_given_name
     required: False
     default: Sarika
@@ -408,10 +408,10 @@ terms:
   main purpose: |
     The reason for your stay in Australia (E.g., study, employment).
 ---
-# This asks what legal issue/s the Main Applicant is seeking advice for 
-question: Purpose of enquiry 
+# This asks what legal issue/s the Main Applicant is seeking advice for
+question: Purpose of enquiry
 subquestion: |
-   What best describes the issue you are seeking advice for?
+  What best describes the issue you are seeking advice for?
 fields:
   - Purpose of Enquiry: migration_enquiry_purpose
     datatype: checkboxes
@@ -430,7 +430,7 @@ fields:
     datatype: area
     required: False
     show if: migration_enquiry_purpose['Other']
-  - Please upload any relevant documents: migration_user_documents 
+  - Please upload any relevant documents: migration_user_documents
     datatype: files
     required: False
     help: |
@@ -444,11 +444,11 @@ fields:
   - MSM Staff: MSM_fee_earner
     datatype: radio
     choices:
-    - Catherine Follett
-    - Mitchell Simmons
-    - Zainab Al-Sweedy
-    - Mark Sekerin
-    - Let MSM assign someone
+      - Catherine Follett
+      - Mitchell Simmons
+      - Zainab Al-Sweedy
+      - Mark Sekerin
+      - Let MSM assign someone
     default: 'Let MSM assign someone'
 ---
 # This question will ask what appointment type the user would like to book.
@@ -459,8 +459,8 @@ fields:
   - Appointment Type: appointment_type
     datatype: radio
     choices:
-    - In person
-    - Virtual (Zoom)
+      - In person
+      - Virtual (Zoom)
     default: 'In person'
 ---
 # Review the user's first name, last name and email
@@ -501,13 +501,13 @@ review:
   - Revisit: migration_user_reason_stay
     button: |
       You provided your Purpose of stay in Australia as **${migration_user_reason_stay}**
-  - Revisit : migration_enquiry_purpose
+  - Revisit: migration_enquiry_purpose
     button: |
       You mentioned that your Purpose of Enquiry was **${migration_enquiry_purpose.true_values()}**
   - Revisit: migration_user_documents
     button: |
       Your Documents
-      
+
       ${migration_user_documents}
   - Revisit: MSM_fee_earner
     button: |
@@ -572,13 +572,13 @@ review:
   - Revisit: migration_main_app_reason_stay
     button: |
       You provided the Main Applicant's Purpose of Stay in Australia as **${migration_main_app_reason_stay}**
-  - Revisit : migration_enquiry_purpose
+  - Revisit: migration_enquiry_purpose
     button: |
       You mentioned that the Purpose of Enquiry was **${migration_enquiry_purpose.true_values()}**
   - Revisit: migration_user_documents
     button: |
       Your Documents
-      
+
       ${migration_user_documents}
   - Revisit: MSM_fee_earner
     button: |
@@ -588,3 +588,4 @@ review:
       You mentioned that you would like to meet **${appointment_type}**
 continue button field: M_main_app_review_answers
 ---
+# This is the code that drives the Migration Pathway

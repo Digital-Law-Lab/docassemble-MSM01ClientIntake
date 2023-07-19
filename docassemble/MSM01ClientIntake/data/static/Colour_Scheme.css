@@ -1,12 +1,13 @@
-/* This cose sets the colour of the navigation bar
+/* sets the colour of the navigation bar
 */
 .navbar{
-    background-color: rgb(210,210,210)!important;
+    background-color: #F8F7F7 !important;
 }
 /* This sets the colour of the 'Source' link in the navbar */
 .navbar .nav-item a{
     color: rgb(0,0,0) !important;
 }
+
 /* Sets the appearance for the 'Continue' button... */
 .btn-primary{
   color: rgb(255,255,255);
@@ -143,10 +144,11 @@
     outline: 0;
     box-shadow: 0 0 0 0.25rem rgba(0, 0, 0, 0.1);
 }
+/* TODO: I dont know the reason for this but it is accidentally causing the footer to have hover effect which is unwanted
 .bg-light:hover {
     --bs-bg-opacity: 1;
     background-color: rgba(0,0,0,0.1) !important;
-}
+} */
 /* Sets the appearance for the 'Restart' button on the final screen*/
 .btn-warning{
     --bs-btn-color: #000;
