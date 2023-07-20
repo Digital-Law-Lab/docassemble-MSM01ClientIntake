@@ -95,8 +95,15 @@ event: save_and_resume
 code: |
   target = 'save_and_resume'
 ---
+objects:
+  - MSMLegal: Individual
+---
 code: |
-  save_email_sent = send_email(to=user_email_address_for_save, template=MSM_Template_Email_saveResume)
+  # TODO: the below is an attempt to set the the reply_to address but it seems to be not working
+  MSMLegal.email = 'conanngodo@gmail.com'
+  MSMLegal.name.uses_parts = False
+  MSMLegal.name.text = "MSM Legal"
+  save_email_sent = send_email(to=user_email_address_for_save, reply_to=MSMLegal,template=MSM_Template_Email_saveResume)
 ---
 #This is the question block displayed during the interview if the user clicks save and resume on one of the questions
 question: |
@@ -109,7 +116,7 @@ fields:
   - no label: wants_save_and_resume_email
     input type: radio
     choices:
-      - 'Ok, e-mail me': True
+      - 'Ok, email me': True
       - 'No thanks': False
   - Email address: user_email_address_for_save
     datatype: email
@@ -120,17 +127,26 @@ template: MSM_Template_Email_saveResume
 subject: |
   MSM Legal Enquiry - Saved Answers
 content: |
+  <div style="font-family: Times New Roman;">
   Hello,
+  <br><br>
 
-  To resume your MSM Legal enquiry please
-  [click here](${ interview_url() }).
+  To resume your MSM Legal enquiry please <a href="${ interview_url() }">click here</a>
+  <br><br>
 
   Please note this link will expire in 90 days from today.
 
+  <br><br>
+
   Should you have any questions or concerns, please do not hesitate to contact us on (08) 8161 5088 or via email at mail@msmlegal.com.au
+
+  <br><br>
 
   Kind Regards, 
 
+  <br>
+
   MSM Legal
+  </div>
 ---
 

@@ -383,26 +383,37 @@ code: |
 #This code block sends the confirmation email to the user for the migration path
 # TODO: what is the reply address
 code: |
-  MSM_Migration_Email_receipt_confirmation_sent = send_email(to=user.email, template=MSM_Migration_Email_receipt_confirmation, attachments=applicant.email_attachments)
+  MSM_Migration_Email_receipt_confirmation_sent = send_email(to=user, template=MSM_Migration_Email_receipt_confirmation, attachments=applicant.email_attachments)
 ---
 # Confirmation email template for the migration path that the user will recieve upon submission
 # TODO: should we improve the subject?
 # TODO: replace with docx template?
 template: MSM_Migration_Email_receipt_confirmation
 subject: |
-  MSM Legal Client Intake Form for ${ user.name }.
+  MSM Legal - Enquiry Received
 content: |
-  Hello ${ user.name }, 
+  <div style="font-family: Times New Roman;">
+  Hi ${ user.name }, 
+
+  <br><br>
 
   Thank you for contacting MSM Legal regarding your matter. We have received your enquiry and one of our team members will be in touch shortly.
 
+  <br><br>
+
   For your reference, please find attached a copy of what we have recieved.
+
+  <br><br>
 
   Should you have any questions or concerns, please do not hesitate to contact us on (08) 8161 5088 or via email at mail@msmlegal.com.au
 
-  Kind Regards, 
+  <br><br>
+
+  Kind Regards,
+  <br>
 
   MSM Legal
+  </div>
 ---
 #This is the code which attaches the pdf to the email the user recieves
 attachment:
