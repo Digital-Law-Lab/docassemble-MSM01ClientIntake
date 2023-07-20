@@ -127,7 +127,7 @@ template: MSM_Template_Email_saveResume
 subject: |
   MSM Legal Enquiry - Saved Answers
 content: |
-  <div style="font-family: Times New Roman;">
+  <div style="font-family: Times New Roman; line-height: 1.5em;">
   Hello,
   <br><br>
 
