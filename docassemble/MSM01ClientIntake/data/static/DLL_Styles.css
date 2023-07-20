@@ -77,3 +77,15 @@ div.da-spinner-container {
     transform: rotate(359deg);
   }
 }
+
+/* enhance Button row below question block */
+fieldset.da-button-set {
+  /* add space between buttons and the fields */
+  margin-top: 54px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  /* polarise buttons on each side */
+  justify-content: space-between;
+}

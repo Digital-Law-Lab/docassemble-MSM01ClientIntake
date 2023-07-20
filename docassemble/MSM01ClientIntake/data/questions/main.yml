@@ -44,11 +44,7 @@ code: |
     WE_review_answers
     WE_final_screen
   elif MSM_Screen_LegalIssue == 'Migration':
-    if is_user_main_applicant == 'Yes':
-      M_user_review_answers
-    elif is_user_main_applicant == 'No':
-      M_main_app_review_answers
-    M_final_screen
+    MSM_Pathway_Migration
 
 ---
 #This is the initial welcome screen that explains what the application does
@@ -74,15 +70,10 @@ question: |
 subquestion: |
 fields:
   - no label: MSM_User_needs_interpreter
-    datatype: radio
-    choices:
-      - Yes
-      - No
+    datatype: yesnoradio
   - Language: MSM_User_language
     # TODO: generate a dropdown menu of common lanugages, I tried pycountry.languages but the list is over 7000
-    show if:
-      variable: MSM_User_needs_interpreter
-      is: Yes
+    show if: MSM_User_needs_interpreter
 ---
 #This asks what legal issue the user has
 question: What is your legal issue?
