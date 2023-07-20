@@ -22,15 +22,15 @@ code: |
 
 
   #This now sets the show save resume link to True (so it appears)
-  #However, it only shows in the Wills, Estates and Probate side
-  #You will need to reimplement this on the other branch for Migration
   show_save_resume_message = True
   if target == 'save_and_resume':
+    # check if user want to save their answers
     if wants_save_and_resume_email:
+      # if yes, try to send the link via email to the temporary address.
       if save_email_sent:
-        log("We sent an e-mail to your e-mail address.", "info")
+        log("We sent an email to your email address. You can safely close this window now!", "info")
       else:
-        log("There was a problem with e-mailing.", "danger")
+        log("There was a problem with emailing.", "danger")
       show_save_resume_message = False
     undefine('wants_save_and_resume_email')
     undefine('save_email_sent')
@@ -91,28 +91,12 @@ default screen parts:
     [Save and resume later](${ url_action('save_and_resume') })
     % endif
 ---
-#This is the main code for the save and resume function
-scan for variables: False
-code: |
-  if target == 'save_and_resume':
-    if wants_save_and_resume_email:
-      if save_email_sent:
-        log("We sent an e-mail to your e-mail address.", "info")
-      else:
-        log("There was a problem with e-mailing.", "danger")
-      show_save_resume_message = False
-    undefine('wants_save_and_resume_email')
-    undefine('save_email_sent')
-    target = 'normal'
-  M_final_screen or WE_final_screen
----
 event: save_and_resume
 code: |
   target = 'save_and_resume'
 ---
 code: |
-  send_email(to=user_email_address_for_save, template=save_resume_template)
-  save_email_sent = True
+  save_email_sent = send_email(to=user_email_address_for_save, template=MSM_Template_Email_saveResume)
 ---
 #This is the question block displayed during the interview if the user clicks save and resume on one of the questions
 question: |
@@ -127,20 +111,18 @@ fields:
     choices:
       - 'Ok, e-mail me': True
       - 'No thanks': False
-    default: True
-  - E-mail address: user_email_address_for_save
+  - Email address: user_email_address_for_save
     datatype: email
     show if: wants_save_and_resume_email
-under: ''
 ---
 # This controls what is displayed in the email sent to the user if they wish to save and resume
-template: save_resume_template
+template: MSM_Template_Email_saveResume
 subject: |
-  MSM Legal Interview - Your Saved Answers
+  MSM Legal Enquiry - Saved Answers
 content: |
-  Dear User,
+  Hello,
 
-  To resume your MSM Legal interview please
+  To resume your MSM Legal enquiry please
   [click here](${ interview_url() }).
 
   Please note this link will expire in 90 days from today.
