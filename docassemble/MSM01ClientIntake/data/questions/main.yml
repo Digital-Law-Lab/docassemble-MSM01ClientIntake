@@ -156,6 +156,7 @@ content: |
   </div>
 ---
 # This is the final screen for both pathways
+prevent going back: True
 event: MSM_Screen_Final
 question: Thank you for contacting us
 subquestion: |
