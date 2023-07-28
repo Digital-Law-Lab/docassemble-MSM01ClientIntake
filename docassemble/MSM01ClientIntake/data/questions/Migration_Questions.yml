@@ -286,7 +286,7 @@ review:
 
       Date of birth: **${ format_date(applicant.birthdate, format=' d MMMM YYYY') }**
 
-      % if not applicant.email:
+      % if applicant.email != "":
       Email address: **${applicant.email}**
       % endif 
 
@@ -349,7 +349,7 @@ review:
       </strong>
 
       % else:
-      You have **not** provided any documents
+      You have **NOT** provided any documents
       % endif
 
   - note: |
