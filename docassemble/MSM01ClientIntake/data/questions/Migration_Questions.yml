@@ -30,7 +30,26 @@ code: |
   applicant.aus_visa
   # purpose of enquiry
   applicant.enquiry_purpose
-  # if user supplied any document, extract the filename for displaying
+  # Compile Reason List - the process is similar to the wills path
+  applicant.has_selected_other = applicant.enquiry_purpose['Other']
+  if applicant.has_selected_other:
+    # if `other` is selected, hide it 
+    applicant.enquiry_purpose['Other'] = False
+    # get the selected reasons, excluding `Other` which is False now
+    applicant.enquiry_reasons_compiled = applicant.enquiry_purpose.true_values() 
+    # Now we reverse the state back to its original value as though it remained intact
+    # we use this work-around to be able to get `true_values()` without `Other`, instead of having to clone the DADict so that we don't mutate the actual response.
+    applicant.enquiry_purpose['Other'] = True
+    # add user description to the end of the list
+    applicant.enquiry_reasons_compiled.append(applicant.other_purpose)
+  else:
+    applicant.enquiry_reasons_compiled = applicant.enquiry_purpose.true_values() 
+
+  ## Extract Filenames ##
+  # if we try to display documents using mako in the review screen, 
+  # Docassemble will converts the files to images or will display the text
+  # if the file is .txt which is unwanted. Therefore, we create a sub list 
+  # that only contains the file name and we render this list to user.
   if applicant.documents is not None:
     applicant.documents_display = [doc.filename for doc in applicant.documents]
   MSM_fee_earner
@@ -40,8 +59,6 @@ code: |
   MSM_Migration_Screen_review
   # user confirmed their answers so send email
   MSM_Migration_Email_receipt_confirmation_sent
-  # display final thank you screen
-  MSM_Migration_Screen_Final
   MSM_Pathway_Migration = True
 ---
 #This is the first question of the migration path - asks if the user is the main applicant
@@ -96,14 +113,10 @@ fields:
   - Email Address: x.email
     datatype: email
     required: x.email_required
-  - What is the best contact phone number?: x.phone_number
+  - Contact phone number?: x.phone_number
     help: |
-      E.g. 0491579455
-  - Is the best contact phone number based in Australia?: x.international_number
-    datatype: noyesradio
-  - What country is associated with the best contact phone number?: x.int_phone_country
-    code: countries_list()
-    show if: x.international_number
+      E.g. +61498765432
+      Please include country code as well
   - Current Address: x.address.address
     required: x.address_required
     help: |
@@ -273,7 +286,7 @@ review:
 
       Date of birth: **${ format_date(applicant.birthdate, format=' d MMMM YYYY') }**
 
-      % if applicant.email is not None:
+      % if not applicant.email:
       Email address: **${applicant.email}**
       % endif 
 
@@ -293,13 +306,13 @@ review:
       #### Family members
   - Edit: applicant.family_members_migrating
     button: |
-      Other family members **will ${'not' if applicant.family_members_migrating == 'No' else ''}** be migrating with ${applicant.subject()}
+      Other family members **will ${'NOT' if applicant.family_members_migrating == 'No' else ''}** be migrating with ${applicant.subject()}
   - note: |
       <br/>
       #### ${ applicant.possessive('visa details', capitalize=True) }
   - Edit: applicant.aus_visa
     button: |
-      ${applicant.subject(capitalize=True)} **${applicant.does_verb('have')} ${'never' if not applicant.aus_visa else ''}** been issued an Australian visa previously
+      ${applicant.subject(capitalize=True)} **${applicant.does_verb('have')} ${'NEVER' if not applicant.aus_visa else ''}** been issued an Australian visa previously
 
       %if applicant.aus_visa:
 
@@ -309,30 +322,24 @@ review:
 
       %endif
 
-      ${applicant.possessive('reason of stay', capitalize=True)}: **${ applicant.stay_reason if applicant.stay_reason != '' else 'None'}**
+      ${applicant.possessive('reason of stay', capitalize=True)}: **${ applicant.stay_reason if applicant.stay_reason != '' else 'Not provided'}**
   - note: |
       <br/>
       #### Purpose of enquiry
   - Edit: applicant.enquiry_purpose
     button: |
-      Your ${noun_plural('reason', len(applicant.enquiry_purpose.true_values()))} for contacting us:
+      Your ${noun_plural('reason', len( applicant.enquiry_reasons_compiled ))} for contacting us:
 
-      <strong>
-      ${applicant.enquiry_purpose.true_values()}
-      </strong>
-
-      %if applicant.enquiry_purpose['Other']: 
-      Details:
-      <strong>
-      ${ applicant.other_purpose }
-      </strong>
-      %endif
+      % for reason in add_separators( applicant.enquiry_reasons_compiled ):
+      - **${reason}**
+      % endfor
   - note: |
       <br/>
       #### Documents
   - Edit: applicant.documents
     button: |
       % if defined('applicant.documents_display'):
+
       You have supplied **${len(applicant.documents)} ${noun_plural('document', len(applicant.documents))}**:
 
       <strong>
@@ -340,6 +347,7 @@ review:
       - ${doc}
       % endfor
       </strong>
+
       % else:
       You have **not** provided any documents
       % endif
@@ -357,20 +365,7 @@ review:
 continue button field: MSM_Migration_Screen_review
 continue button label: Confirm and Submit
 ---
-# This is the final screen for the migration path and forces docassemble to run the Migration questions
-event: MSM_Migration_Screen_Final
-question: Thank you for contacting us
-subquestion: |
-  Your response has now been submitted. We will contact you as soon as possible.
-
-  A confirmation email has also been sent, along with a copy of your response.
-
-buttons:
-  - Exit: exit
-    url: https://www.msmlegal.com.au/
-  - Restart: restart
----
-#This code block compiles the documents sent via email upon submission to the user and MSM Legal for the migration path
+#This code block compiles the documents due to be sent via email upon submission to the user and MSM Legal for the migration path
 code: |
   if applicant.documents is not None:
     # attach user supplied documents and the compiled answers
@@ -383,37 +378,7 @@ code: |
 #This code block sends the confirmation email to the user for the migration path
 # TODO: what is the reply address
 code: |
-  MSM_Migration_Email_receipt_confirmation_sent = send_email(to=user, template=MSM_Migration_Email_receipt_confirmation, attachments=applicant.email_attachments)
----
-# Confirmation email template for the migration path that the user will recieve upon submission
-# TODO: should we improve the subject?
-# TODO: replace with docx template?
-template: MSM_Migration_Email_receipt_confirmation
-subject: |
-  MSM Legal - Enquiry Received
-content: |
-  <div style="font-family: Times New Roman; line-height: 1.5em;">
-  Hi ${ user.name }, 
-
-  <br><br>
-
-  Thank you for contacting MSM Legal regarding your matter. We have received your enquiry and one of our team members will be in touch shortly.
-
-  <br><br>
-
-  For your reference, please find attached a copy of what we have recieved.
-
-  <br><br>
-
-  Should you have any questions or concerns, please do not hesitate to contact us on (08) 8161 5088 or via email at mail@msmlegal.com.au
-
-  <br><br>
-
-  Kind Regards,
-  <br>
-
-  MSM Legal
-  </div>
+  MSM_Migration_Email_receipt_confirmation_sent = send_email(to=user, template=MSM_Template_Email_ReceiptConfirmation, attachments=applicant.email_attachments)
 ---
 #This is the code which attaches the pdf to the email the user recieves
 attachment:

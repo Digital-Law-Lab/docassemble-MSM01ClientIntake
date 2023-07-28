@@ -8,13 +8,15 @@ include:
 mandatory: True
 code: |
   target = 'normal'
-  show_save_resume_message = False
   multi_user = True
 ---
 #This is the code screen that drives the interview process
 mandatory: True
 scan for variables: False
 code: |
+  # Don't show save and resume link yet
+  show_save_resume_message = False
+
   # Show welcome screen 
   MSM_Screen_Welcome
 
@@ -41,10 +43,14 @@ code: |
 
   # there are two pathways that depend on the selected legal issue
   if MSM_Screen_LegalIssue == 'Wills, Estates and Probate':
-    WE_review_answers
-    WE_final_screen
+    MSM_Pathway_Wills
   elif MSM_Screen_LegalIssue == 'Migration':
     MSM_Pathway_Migration
+
+  # disable save and resume button
+  show_save_resume_message = False  
+  # display thank you screen
+  MSM_Screen_Final
 
 ---
 #This is the initial welcome screen that explains what the application does
@@ -100,7 +106,7 @@ objects:
 ---
 code: |
   # TODO: the below is an attempt to set the the reply_to address but it seems to be not working
-  MSMLegal.email = 'conanngodo@gmail.com'
+  # MSMLegal.email = 'example@gmail.com'
   MSMLegal.name.uses_parts = False
   MSMLegal.name.text = "MSM Legal"
   save_email_sent = send_email(to=user_email_address_for_save, reply_to=MSMLegal,template=MSM_Template_Email_saveResume)
@@ -144,6 +150,47 @@ content: |
 
   Kind Regards, 
 
+  <br>
+
+  MSM Legal
+  </div>
+---
+# This is the final screen for both pathways
+event: MSM_Screen_Final
+question: Thank you for contacting us
+subquestion: |
+  Your response has now been submitted. We will contact you as soon as possible.
+
+  A confirmation email has also been sent, along with a copy of your response.
+
+buttons:
+  - Exit: exit
+    url: https://www.msmlegal.com.au/
+  - Restart: restart
+---
+# Confirmation email template that the user will recieve upon submission
+template: MSM_Template_Email_ReceiptConfirmation
+subject: |
+  [MSM Legal] Enquiry Received
+content: |
+  <div style="font-family: Times New Roman; line-height: 1.5em;">
+  Hi ${ user.name }, 
+
+  <br><br>
+
+  Thank you for contacting MSM Legal regarding your matter. We have received your enquiry and one of our team members will be in touch shortly.
+
+  <br><br>
+
+  For your reference, please find attached a copy of what we have recieved.
+
+  <br><br>
+
+  Should you have any questions or concerns, please do not hesitate to contact us on (08) 8161 5088 or via email at mail@msmlegal.com.au
+
+  <br><br>
+
+  Kind Regards,
   <br>
 
   MSM Legal
