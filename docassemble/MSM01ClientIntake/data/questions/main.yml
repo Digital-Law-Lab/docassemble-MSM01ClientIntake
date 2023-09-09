@@ -101,36 +101,12 @@ event: save_and_resume
 code: |
   target = 'save_and_resume'
 ---
-# Store information about MSM Legal in this object
-objects:
-  - MSMLegal: Individual
-  - MSMLegal_noreply: Individual
----
-# This block sets the information for MSM Legal
-code: |
-  # Name
-  MSMLegal.name.uses_parts = False
-  MSMLegal.name.text = "MSM Legal"
-
-  # Contact phone
-  MSMLegal.phone_number = '+61 8 8161 5088'
-
-  # Email addresses
-  MSMLegal.email = 'mail@msmlegal.com.au'
----
-# This sets for MSMLegal_noreply.
-# For some reason send_email() wants name.first (instead of name.text)
-code: |
-  MSMLegal_noreply.name.first = 'MSM Legal No Reply'
-  MSMLegal_noreply.email = 'noreply@dll.org.au'
----
-
 #This is the question block displayed during the interview if the user clicks save and resume on one of the questions
 question: |
   How to resume your interview later
 subquestion: |
   If you want to resume your interview later, we can
-  e-mail you a link that you can click on to resume
+  email you a link that you can click on to resume
   your interview at a later time.
 fields:
   - no label: wants_save_and_resume_email
@@ -142,9 +118,9 @@ fields:
     datatype: email
     show if: wants_save_and_resume_email
 ---
-# This block sents the save and resume email.
+# This block sends the save and resume email.
 code: |
-  save_email_sent = send_email(to=user_email_address_for_save, reply_to=MSMLegal,template=MSM_Template_Email_saveResume)
+  save_email_sent = send_email(to=user_email_address_for_save, sender=MSMLegal_noreply, reply_to=MSMLegal_noreply, template=MSM_Template_Email_saveResume)
 ---
 # This controls what is displayed in the email sent to the user if they wish to save and resume
 template: MSM_Template_Email_saveResume

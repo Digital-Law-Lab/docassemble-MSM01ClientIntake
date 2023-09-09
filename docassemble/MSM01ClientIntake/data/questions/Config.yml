@@ -53,8 +53,9 @@ code: |
 # Store information about MSM Legal in this object
 objects:
   - MSMLegal: Individual
+  - MSMLegal_noreply: Individual
 ---
-# This block sets the information for MSMLegal
+# This block sets the information for MSM Legal
 code: |
   # Name
   MSMLegal.name.uses_parts = False
@@ -65,9 +66,12 @@ code: |
 
   # Email addresses
   MSMLegal.email = 'mail@msmlegal.com.au'
-  MSMLegal.email_noreply = 'noreply@msmlegal.com.au'
-  # Use this for testing
-  MSMLegal.email_noreply = 'markjfe@gmail.com'
+---
+# This sets for MSMLegal_noreply.
+# For some reason send_email() wants name.first (instead of name.text)
+code: |
+  MSMLegal_noreply.name.first = 'MSM Legal No Reply'
+  MSMLegal_noreply.email = 'noreply@dll.org.au'
 ---
 # Outlook can't include CSS styles so we need to embed styles and other content directily into the email body.
 # We do this by separating out the relevant parts (styles, signatures) into templates which we can include
