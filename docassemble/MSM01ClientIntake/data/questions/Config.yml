@@ -50,7 +50,26 @@ mandatory: True
 code: |
   set_parts(logo='<img src="' + MSM_Logo.url_for() + '" style="height: 75px;">')
 ---
-# Outlook can't include CSS styles so we need to embed styles and other content directily into the email body.  
+# Store information about MSM Legal in this object
+objects:
+  - MSMLegal: Individual
+---
+# This block sets the information for MSMLegal
+code: |
+  # Name
+  MSMLegal.name.uses_parts = False
+  MSMLegal.name.text = "MSM Legal"
+
+  # Contact phone
+  MSMLegal.phone_number = '+61 8 8161 5088'
+
+  # Email addresses
+  MSMLegal.email = 'mail@msmlegal.com.au'
+  MSMLegal.email_noreply = 'noreply@msmlegal.com.au'
+  # Use this for testing
+  MSMLegal.email_noreply = 'markjfe@gmail.com'
+---
+# Outlook can't include CSS styles so we need to embed styles and other content directily into the email body.
 # We do this by separating out the relevant parts (styles, signatures) into templates which we can include
 # in the various email templates we use
 #
@@ -58,16 +77,16 @@ code: |
 template: MSMLegal_Email_Styles
 content: |
   <style>
-  p.MsoNormal, li.MsoNormal, div.MsoNormal {
-  margin:0cm;
-	font-size:11.0pt;
-	font-family:"Arial",sans-serif;
-  line-height: 1.25em;
-  margin-bottom: 1.5em
-  }
-  p MsoNormal_nospace {
-    margin-bottom: 1em;
-  }
+    p.MsoNormal, li.MsoNormal, div.MsoNormal {
+      margin: 0cm;
+      font-size: 11.0pt;
+      font-family: "Arial",sans-serif;
+      line-height: 1.25em;
+      margin-bottom: 1.5em
+    }
+    p MsoNormal_nospace {
+      margin-bottom: 1em;
+    }
   </style>
 ---
 # Sets out the email signature
