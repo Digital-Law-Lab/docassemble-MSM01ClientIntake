@@ -96,31 +96,10 @@ default screen parts:
     [Save and resume later](${ url_action('save_and_resume') })
     % endif
 ---
+# this block directs the app into the save and resume pathway
 event: save_and_resume
 code: |
   target = 'save_and_resume'
----
-# Store information about MSM Legal in this object
-objects:
-  - MSMLegal: Individual
----
-# This block sets the information
-code: |
-  # Name
-  MSMLegal.name.uses_parts = False
-  MSMLegal.name.text = "MSM Legal"
-
-  # Contact phone
-  MSMLegal.phone_number = '+61 8 8161 5088'
-
-  # Email addresses
-  MSMLegal.email = 'mail@msmlegal.com.au'
-  MSMLegal.email_noreply = 'noreply@msmlegal.com.au'
-  # Use this for testing
-  MSMLegal.email_noreply = 'markjfe@gmail.com'
-
-  # This was for testing.  I'm not using it right now.
-  # save_email_sent = send_email(to=user_email_address_for_save, reply_to=MSMLegal,template=MSM_Template_Email_saveResume)
 ---
 #This is the question block displayed during the interview if the user clicks save and resume on one of the questions
 question: |
@@ -138,6 +117,10 @@ fields:
   - Email address: user_email_address_for_save
     datatype: email
     show if: wants_save_and_resume_email
+---
+# This block sents the save and resume email.
+code: |
+  save_email_sent = send_email(to=user_email_address_for_save, reply_to=MSMLegal,template=MSM_Template_Email_saveResume)
 ---
 # This controls what is displayed in the email sent to the user if they wish to save and resume
 template: MSM_Template_Email_saveResume
@@ -167,7 +150,7 @@ buttons:
     url: https://www.msmlegal.com.au/
   - Restart: restart
 ---
-# Confirmation email template that the user will recieve upon submission
+# Confirmation email template that the user recieves upon submission
 template: MSM_Template_Email_ReceiptConfirmation
 subject: |
   MSM Legal Enquiry Received
@@ -182,3 +165,4 @@ content: |
 
   ${MSMLegal_Email_Signature}
 ---
+
