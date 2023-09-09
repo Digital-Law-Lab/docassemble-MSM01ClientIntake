@@ -103,8 +103,9 @@ code: |
 # Store information about MSM Legal in this object
 objects:
   - MSMLegal: Individual
+  - MSMLegal_noreply: Individual
 ---
-# This block sets the information
+# This block sets the information for MSM Legal
 code: |
   # Name
   MSMLegal.name.uses_parts = False
@@ -115,13 +116,14 @@ code: |
 
   # Email addresses
   MSMLegal.email = 'mail@msmlegal.com.au'
-  MSMLegal.email_noreply = 'noreply@msmlegal.com.au'
-  # Use this for testing
-  MSMLegal.email_noreply = 'markjfe@gmail.com'
-
-  # This was for testing.  I'm not using it right now.
-  # save_email_sent = send_email(to=user_email_address_for_save, reply_to=MSMLegal,template=MSM_Template_Email_saveResume)
 ---
+# This sets for MSMLegal_noreply.
+# For some reason send_email() wants name.first (instead of name.text)
+code: |
+  MSMLegal_noreply.name.first = 'MSM Legal No Reply'
+  MSMLegal_noreply.email = 'noreply@dll.org.au'
+---
+
 #This is the question block displayed during the interview if the user clicks save and resume on one of the questions
 question: |
   How to resume your interview later
@@ -158,9 +160,9 @@ prevent going back: True
 event: MSM_Screen_Final
 question: Thank you for contacting us
 subquestion: |
-  Your response has now been submitted. We will contact you as soon as possible.
+  Your responses have been sent to MSM Legal.  You will be contacted shortly.
 
-  A confirmation email has also been sent, along with a copy of your response.
+  A confirmation email has also been sent to you along with a copy of your responses.
 
 buttons:
   - Exit: exit

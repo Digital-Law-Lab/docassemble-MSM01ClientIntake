@@ -75,9 +75,12 @@ fields:
   - Last Name: willsUser.name.last
   - Email Address: willsUser.email
     datatype: email
-  - contact phone number?: willsUser.phone_number
-    help: |
-      Please include country code E.g. +61498765432
+  - Contact Phone Number: willsUser.phone_number
+    html: |
+      <span style="font-size: 9pt; margin-bottom: 1pt;">
+      <p style="margin-bottom: 1pt;">Please include country code</p>
+      <p>eg:&nbsp;+61&nbsp;498&nbsp;765&nbsp;432</p>
+      </span>
 ---
 #This block asks if there are any other parties involved in the dispute/matter
 question: |
@@ -85,7 +88,7 @@ question: |
 fields:
   - Is there any other party involved in the matter?: willsUser.other_party_involved
     datatype: yesnoradio
-  - Please provide their Full Name: willsUser.other_party_fullName
+  - Other party's full name: willsUser.other_party_fullName
     show if: willsUser.other_party_involved
     help: |
       MSM Legal require this information to check for any conflicts of interest.
@@ -143,7 +146,7 @@ review:
     button: |
       % if willsUser.other_party_involved:
 
-      You indicated that another party named **${willsUser.other_party_fullName.upper()}** is involved.
+      **${willsUser.other_party_fullName.upper()}**
 
       % else:
 
@@ -180,6 +183,10 @@ attachment:
 code: |
   # the email template referes to `user.name` to avoid Docassemble seeking its definition, we point `user` to  `willsUser`.
   user = willsUser
-  MSM_Wills_Email_receipt_confirmation_sent = send_email(to=willsUser,template=MSM_Template_Email_ReceiptConfirmation, attachments=willsUser.email_attachments)
+  MSM_Wills_Email_receipt_confirmation_sent = send_email(to=willsUser,
+                                                          sender=MSMLegal_noreply,
+                                                          reply_to=MSMLegal_noreply,
+                                                          template=MSM_Template_Email_ReceiptConfirmation,
+                                                          attachments=willsUser.email_attachments)
 ---
 
