@@ -3,7 +3,6 @@ include:
   - Config.yml
   - Wills_Estates_Questions.yml
   - Migration_Questions.yml
-  - Colour_Scheme.yml
 ---
 mandatory: True
 code: |
@@ -101,15 +100,27 @@ event: save_and_resume
 code: |
   target = 'save_and_resume'
 ---
+# Store information about MSM Legal in this object
 objects:
   - MSMLegal: Individual
 ---
+# This block sets the information
 code: |
-  # TODO: the below is an attempt to set the the reply_to address but it seems to be not working
-  # MSMLegal.email = 'example@gmail.com'
+  # Name
   MSMLegal.name.uses_parts = False
   MSMLegal.name.text = "MSM Legal"
-  save_email_sent = send_email(to=user_email_address_for_save, reply_to=MSMLegal,template=MSM_Template_Email_saveResume)
+
+  # Contact phone
+  MSMLegal.phone_number = '+61 8 8161 5088'
+
+  # Email addresses
+  MSMLegal.email = 'mail@msmlegal.com.au'
+  MSMLegal.email_noreply = 'noreply@msmlegal.com.au'
+  # Use this for testing
+  MSMLegal.email_noreply = 'markjfe@gmail.com'
+
+  # This was for testing.  I'm not using it right now.
+  # save_email_sent = send_email(to=user_email_address_for_save, reply_to=MSMLegal,template=MSM_Template_Email_saveResume)
 ---
 #This is the question block displayed during the interview if the user clicks save and resume on one of the questions
 question: |
@@ -134,25 +145,12 @@ subject: |
   MSM Legal Enquiry - Saved Answers
 content: |
   <div style="font-family: Times New Roman; line-height: 1.5em;">
-  Hello,
-  <br><br>
-
-  To resume your MSM Legal enquiry please <a href="${ interview_url() }">click here</a>
-  <br><br>
-
-  Please note this link will expire in 90 days from today.
-
-  <br><br>
-
-  Should you have any questions or concerns, please do not hesitate to contact us on (08) 8161 5088 or via email at mail@msmlegal.com.au
-
-  <br><br>
-
-  Kind Regards, 
-
-  <br>
-
-  MSM Legal
+  <p>Hello,</p>
+  <p>To resume your MSM Legal enquiry please <a href="${ interview_url() }">click here</a></p>
+  <p>Please note this link will expire in 90 days from today.</p>
+  <p>Should you have any questions or concerns, please do not hesitate to contact us on ${MSMLegal.phone_number} or via email at ${MSMLegal.email}</p>
+  <p>Kind Regards, </p>
+  <p>MSM Legal</p>
   </div>
 ---
 # This is the final screen for both pathways
@@ -172,29 +170,15 @@ buttons:
 # Confirmation email template that the user will recieve upon submission
 template: MSM_Template_Email_ReceiptConfirmation
 subject: |
-  [MSM Legal] Enquiry Received
+  MSM Legal Enquiry Received
 content: |
-  <div style="font-family: Times New Roman; line-height: 1.5em;">
-  Hi ${ user.name }, 
+  ${MSMLegal_Email_Styles}
 
-  <br><br>
+  <p class="MsoNormal">Hi ${ user.name }, </p>
+  <p class="MsoNormal">Thank you for contacting MSM Legal regarding your matter. We have received your enquiry and one of our team members will be in touch shortly.</p>
+  <p class="MsoNormal">For your reference, please find attached a copy of what we have recieved.</p>
+  <p class="MsoNormal">Should you have any questions or concerns, please do not hesitate to contact us on ${MSMLegal.phone_number} or via email at ${MSMLegal.email}</p>
+  <p class="MsoNormal">Kind Regards,</p>
 
-  Thank you for contacting MSM Legal regarding your matter. We have received your enquiry and one of our team members will be in touch shortly.
-
-  <br><br>
-
-  For your reference, please find attached a copy of what we have recieved.
-
-  <br><br>
-
-  Should you have any questions or concerns, please do not hesitate to contact us on (08) 8161 5088 or via email at mail@msmlegal.com.au
-
-  <br><br>
-
-  Kind Regards,
-  <br>
-
-  MSM Legal
-  </div>
+  ${MSMLegal_Email_Signature}
 ---
-

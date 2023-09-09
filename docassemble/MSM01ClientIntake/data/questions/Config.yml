@@ -49,3 +49,36 @@ objects:
 mandatory: True
 code: |
   set_parts(logo='<img src="' + MSM_Logo.url_for() + '" style="height: 75px;">')
+---
+# Outlook can't include CSS styles so we need to embed styles and other content directily into the email body.  
+# We do this by separating out the relevant parts (styles, signatures) into templates which we can include
+# in the various email templates we use
+#
+# This defines the styles at the head of each email
+template: MSMLegal_Email_Styles
+content: |
+  <style>
+  p.MsoNormal, li.MsoNormal, div.MsoNormal {
+  margin:0cm;
+	font-size:11.0pt;
+	font-family:"Arial",sans-serif;
+  line-height: 1.25em;
+  margin-bottom: 1.5em
+  }
+  p MsoNormal_nospace {
+    margin-bottom: 1em;
+  }
+  </style>
+---
+# Sets out the email signature
+template: MSMLegal_Email_Signature
+content: |
+  <p class="MsoNormal"><b>${MSMLegal.name}</b></p>
+  <p class="MsoNormal"><span style="margin-bottom: 0.5em;"><b>e.</b><a href="${MSMLegal.email}">${MSMLegal.email}</a></span></p>
+  <p class="MsoNormal"><span style="margin-bottom: 0.5em;"><b>t.</b>${MSMLegal.phone_number}</span></p>
+  <p class="MsoNormal"><span style="margin-bottom: 0.5em;">117 Wright Street, Adelaide SA 5000 Australia</span></p>
+  <p class="MsoNormal"><b><a href="https://msmslegal.com.au">msmlegal.com.au</a></b></p>
+  <p class="MsoNormal"><i><span style="font-size: 8.5pt; margin-bottom: 0.5em;">Liability limited by a scheme approved under Professional Standards Legislation.</span></i></p>
+  <p class="MsoNormal"><i><span style="font-size: 8.5pt;">The contents of this email and any attachments are confidential and may be protected by legal professional privilege. If you have received this email in error please delete the document. Views expressed in this email are solely those of the author and do not necessarily represent those of MSMLegal. No warranty is made that this email is free from error, computer virus or other defect.</span></i></p>
+---
+
