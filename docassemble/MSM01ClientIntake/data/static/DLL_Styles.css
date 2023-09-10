@@ -1,0 +1,91 @@
+/* Customise footer */
+footer.dafooter {
+  /* background-color: inherit !important; */
+  height: 90px !important;
+}
+
+footer.dafooter > div.container {
+  height: 100% !important;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+body.da-pad-for-footer {
+  margin-bottom: 130px !important;
+}
+
+#DLL_attribution-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  height: fit-content;
+  padding: 28px 10px;
+  margin-top: 40px;
+}
+
+#DLL_attribution-text {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  line-height: 18px;
+  letter-spacing: 0.75px;
+}
+
+#DLL_attribution-logo {
+  height: 11vw;
+  display: flex;
+  max-height: 35px;
+  margin-left: 15px;
+}
+/* END - Customise built-in footer */
+
+/* Navbar */
+.da-pad-for-navbar {
+  padding-top: 140px;
+}
+/* END - Navbar */
+
+/* improve spinner */
+#daSpinner {
+  z-index: 100;
+  height: 100vh;
+  width: 100vw;
+  position: fixed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  top: 0px;
+  background: rgb(243 239 239 / 59%);
+  backdrop-filter: blur(4px);
+}
+
+#daSpinner span.da-spinner svg {
+  animation: rotation 2s infinite linear;
+}
+
+div.da-spinner-container {
+  margin-top: 0;
+}
+@keyframes rotation {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(359deg);
+  }
+}
+
+/* enhance Button row below question block */
+fieldset.da-button-set {
+  /* add space between buttons and the fields */
+  margin-top: 54px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  /* polarise buttons on each side */
+  justify-content: space-between;
+}

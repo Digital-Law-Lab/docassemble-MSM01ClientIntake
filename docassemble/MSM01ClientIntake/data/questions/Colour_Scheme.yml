@@ -1,6 +1,0 @@
-# The CSS file will be in the 'Static' folder in the playground.
-# to use the colour scheme CSS static file
----
-features:
-  css: Colour_Scheme.css
----

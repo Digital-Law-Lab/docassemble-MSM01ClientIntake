@@ -1,71 +1,69 @@
----
-objects:
-  - MSM_Logo: DAStaticFile.using(filename='MSM_Logo2.png')
----
-mandatory: True
-code: |
-  set_parts(logo='<img src="' + MSM_Logo.url_for() + '" style="height: 50px;">')
----
 #This includes the code from the other interviews
 include:
+  - Config.yml
   - Wills_Estates_Questions.yml
   - Migration_Questions.yml
-  - Colour_Scheme.yml
 ---
 mandatory: True
 code: |
   target = 'normal'
-  show_save_resume_message = False
   multi_user = True
 ---
-#This is the code screen that drives 
+#This is the code screen that drives the interview process
 mandatory: True
 scan for variables: False
 code: |
-  if MSMLegalWelcome == 'proceed':
-    #This now sets the show save resume link to True (so it appears)
-    #However, it only shows in the Wills, Estates and Probate side
-    #You will need to reimplement this on the other branch for Migration
-    show_save_resume_message = True
-    if target == 'save_and_resume':
-      if wants_save_and_resume_email:
-        if save_email_sent:
-          log("We sent an e-mail to your e-mail address.", "info")
-        else:
-          log("There was a problem with e-mailing.", "danger")
-        show_save_resume_message = False
-      undefine('wants_save_and_resume_email')
-      undefine('save_email_sent')
-      target = 'normal'
-    if ESLquestion == 'Yes':
-      ESL_language_spoken
-      is_interpreter_needed
-    
-    if legalIssue == 'Wills, Estates and Probate':
-      WE_review_answers
-      WE_final_screen
-    elif legalIssue == 'Migration':
-     if is_user_main_applicant == 'Yes':
-       M_user_review_answers
-     elif is_user_main_applicant == 'No':
-       M_main_app_review_answers
-     M_final_screen
-  elif MSMLegalWelcome == 'exit':
-    command('exit', url='https://www.msmlegal.com.au/')
+  # Don't show save and resume link yet
+  show_save_resume_message = False
+
+  # Show welcome screen 
+  MSM_Screen_Welcome
+
+  # Program will exit if user clicked 'I do not accept' at previous screen, so the following will only run if user agreed (ie clicked on the button with the value `proceed`)
+
+
+  #This now sets the show save resume link to True (so it appears)
+  show_save_resume_message = True
+  if target == 'save_and_resume':
+    # check if user want to save their answers
+    if wants_save_and_resume_email:
+      # if yes, try to send the link via email to the temporary address.
+      if save_email_sent:
+        log("We sent an email to your email address. You can safely close this window now!", "info")
+      else:
+        log("There was a problem with emailing.", "danger")
+      show_save_resume_message = False
+    undefine('wants_save_and_resume_email')
+    undefine('save_email_sent')
+    target = 'normal'
+
+  # check if client requires an interpreter
+  MSM_User_needs_interpreter
+
+  # there are two pathways that depend on the selected legal issue
+  if MSM_Screen_LegalIssue == 'Wills, Estates and Probate':
+    MSM_Pathway_Wills
+  elif MSM_Screen_LegalIssue == 'Migration':
+    MSM_Pathway_Migration
+
+  # disable save and resume button
+  show_save_resume_message = False  
+  # display thank you screen
+  MSM_Screen_Final
+
 ---
 #This is the initial welcome screen that explains what the application does
 question: Welcome to MSM Legal
 subquestion: |
-    This application will give [MSM Legal](https://www.msmlegal.com.au/) insight into your situation and help in assigning the best staff member to assist you in your matter.
-    
-    **Disclaimer**
-    
-    - The contents of this application do not constitute legal advice and should not be relied upon as such.
-    
-    - Any information obtained as part of this form is not intended to be a substitute for legal advice.
-    
-    - All information collected by this form is collected in accordance with the **Privacy Act 1988 (Cth)** and the [**MSM Legal Privacy Policy**](https://www.msmlegal.com.au/privacy/).
-field: MSMLegalWelcome
+  The information you provide to [MSM Legal](https://www.msmlegal.com.au/) will help assign the best staff member to assist you in your matter.
+
+  **Disclaimer**
+
+  - Any information obtained as part of this form is not legal advice and must not be used as a substitute for legal advice.
+
+  - All information collected by this form is collected in accordance with the **Privacy Act 1988 (Cth)** and the [**MSM Legal Privacy Policy**](https://www.msmlegal.com.au/privacy/).
+
+field: MSM_Screen_Welcome
 buttons:
   - I do not accept: exit
     color: danger
@@ -73,34 +71,23 @@ buttons:
 ---
 #This is the ESL question
 question: |
-  Language Other Than English
+  Do you need an interpreter?
 subquestion: |
 fields:
-  - Do you, or the person the appointment is for, speak a language other than English at home?: ESLquestion
-    datatype: radio
-    choices:
-      - Yes
-      - No
-    default: No
-  - Language: ESL_language_spoken
-    show if:
-      variable: ESLquestion
-      is: Yes
-  - Do you need a translator?: is_interpreter_needed
-    datatype: radio
-    choices:
-      - Yes
-      - No
-    show if:
-      variable: ESLquestion
-      is: Yes
+  - no label: MSM_User_needs_interpreter
+    datatype: yesnoradio
+  - Language: MSM_User_language
+    # TODO: generate a dropdown menu of common lanugages, I tried pycountry.languages but the list is over 7000
+    show if: MSM_User_needs_interpreter
 ---
 #This asks what legal issue the user has
-question: What is your legal issue related to?
-field: legalIssue
-buttons:
-  - 'Migration'
-  - 'Wills, Estates and Probate'
+question: What is your legal issue?
+fields:
+  - no label: MSM_Screen_LegalIssue
+    datatype: radio
+    choices:
+      - 'Migration'
+      - 'Wills, Estates and Probate'
 ---
 # This is code for the save and resume function
 default screen parts:
@@ -109,106 +96,73 @@ default screen parts:
     [Save and resume later](${ url_action('save_and_resume') })
     % endif
 ---
-#This is the main code for the save and resume function
-scan for variables: False
-code: |
-  if target == 'save_and_resume':
-    if wants_save_and_resume_email:
-      if save_email_sent:
-        log("We sent an e-mail to your e-mail address.", "info")
-      else:
-        log("There was a problem with e-mailing.", "danger")
-      show_save_resume_message = False
-    undefine('wants_save_and_resume_email')
-    undefine('save_email_sent')
-    target = 'normal'
-  M_final_screen or WE_final_screen
----
+# this block directs the app into the save and resume pathway
 event: save_and_resume
 code: |
   target = 'save_and_resume'
----
-code: |
-  send_email(to=user_email_address_for_save, template=save_resume_template)
-  save_email_sent = True
 ---
 #This is the question block displayed during the interview if the user clicks save and resume on one of the questions
 question: |
   How to resume your interview later
 subquestion: |
   If you want to resume your interview later, we can
-  e-mail you a link that you can click on to resume
+  email you a link that you can click on to resume
   your interview at a later time.
 fields:
   - no label: wants_save_and_resume_email
     input type: radio
     choices:
-      - "Ok, e-mail me": True
-      - "No thanks": False
-    default: True
-  - E-mail address: user_email_address_for_save
+      - 'Ok, email me': True
+      - 'No thanks': False
+  - Email address: user_email_address_for_save
     datatype: email
     show if: wants_save_and_resume_email
-under: ""
+---
+# This block sends the save and resume email.
+code: |
+  save_email_sent = send_email(to=user_email_address_for_save, sender=MSMLegal_noreply, reply_to=MSMLegal_noreply, template=MSM_Template_Email_saveResume)
 ---
 # This controls what is displayed in the email sent to the user if they wish to save and resume
-template: save_resume_template
+template: MSM_Template_Email_saveResume
 subject: |
-  MSM Legal Interview - Your Saved Answers
+  MSM Legal Enquiry - Saved Answers
 content: |
-  Dear User,
-  
-  To resume your MSM Legal interview please
-  [click here](${ interview_url() }).
-  
-  Please note this link will expire in 90 days from today.
-  
-  Should you have any questions or concerns, please do not hesitate to contact us on (08) 8161 5088 or via email at mail@msmlegal.com.au
-  
-  Kind Regards, 
-  
-  MSM Legal
+  <div style="font-family: Times New Roman; line-height: 1.5em;">
+  <p>Hello,</p>
+  <p>To resume your MSM Legal enquiry please <a href="${ interview_url() }">click here</a></p>
+  <p>Please note this link will expire in 90 days from today.</p>
+  <p>Should you have any questions or concerns, please do not hesitate to contact us on ${MSMLegal.phone_number} or via email at ${MSMLegal.email}</p>
+  <p>Kind Regards, </p>
+  <p>MSM Legal</p>
+  </div>
 ---
-#This is the flinders attribution code
-default screen parts:
-  post: |
-    <div style="display: flex; height: 200px; align-items: flex-end; flex-direction: row-reverse">
-    <div style="margin: 5px"><img src="https://staff.flinders.edu.au/etc.clientlibs/flinders/clientlibs/clientlib-site/resources/images/flinderuni_main_logo_black.png" height="40">
-    </div>
-    <div style="margin: 5px; text-align: right">
-    <cite><small><i>
-    Developed by Flinders University in collaboration with MSM Legal Pty Ltd
-    </i></small></cite>
-    </div>
-    </div>
+# This is the final screen for both pathways
+prevent going back: True
+event: MSM_Screen_Final
+question: Thank you for contacting us
+subquestion: |
+  Your responses have been sent to MSM Legal.  You will be contacted shortly.
+
+  A confirmation email has also been sent to you along with a copy of your responses.
+
+buttons:
+  - Exit: exit
+    url: https://www.msmlegal.com.au/
+  - Restart: restart
 ---
-# This code block attributes ownership and sets the name of the interview displayed on the web tab as well as on the app
-metadata:
-  title: |
-    MSM Legal Online Client Intake
-  short title: |
-    MSM Legal
-  description: |
-    A client intake interview
-  authors:
-    - name: Brandon Trimboli
-      organisation: Flinders University
-    - name: Caitlin Driscoll
-      organisation: Flinders University
-    - name: Niamh Keller
-      organisation: Flinders University
-    - name: Paige Bowers
-      organisation: Flinders University
-    - name: Shai Barboza
-      organisation: Flinders University
-    - name: Shelley Toth
-      organisation: Flinders University
+# Confirmation email template that the user recieves upon submission
+template: MSM_Template_Email_ReceiptConfirmation
+subject: |
+  MSM Legal Enquiry Received
+content: |
+  ${MSMLegal_Email_Styles}
+
+  <p class="MsoNormal">Hi ${ user.name }, </p>
+  <p class="MsoNormal">Thank you for contacting MSM Legal regarding your matter. We have received your enquiry and one of our team members will be in touch shortly.</p>
+  <p class="MsoNormal">For your reference, please find attached a copy of what we have recieved.</p>
+  <p class="MsoNormal">Should you have any questions or concerns, please do not hesitate to contact us on ${MSMLegal.phone_number} or via email at ${MSMLegal.email}</p>
+  <p class="MsoNormal">Kind Regards,</p>
+
+  ${MSMLegal_Email_Signature}
 ---
-#This code block disables the right side menu
-features:
-  hide standard menu: True
----
-#This code block disables the debug feature
-features:
-  debug: False
----
+

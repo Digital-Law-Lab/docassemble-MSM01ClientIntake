@@ -1,59 +1,51 @@
 ---
-# This is the final screen of the wills and estates path
-# This screen forces docassemble to ask each of the wills and estates questions
-event: WE_final_screen
-question: Thank you for using the MSM Online Client Intake Form
-subquestion: |
-  Thank you for using the MSM Online Client Intake Form!
-  
-  Your responses have now been sent to MSM Legal and you will be contacted as soon as possible to organise an appointment time with a member of the MSM Legal Team. A copy of your responses will also be sent to the email address you have provided.
-   
-  <html>
-  <head>
-    <style>
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        
-        th, td {
-            border: 1px solid black;
-            padding: 8px;
-            text-align: left;
-        }
-        
-    </style>
-  </head> 
-  
-    Questions Asked|Your Response
-    ---------------|-------------
-    What is the issue? | ${ wills_estates_options.true_values() }
-    First Name | ${ wills_estates_first_name }
-    Other Given Name(s) | ${ wills_estates_given_name }
-    Last Name | ${ wills_estates_last_name }
-    Date of Birth | ${ format_date(wills_estates_DOB, format=' d MMMM YYYY') }
-    Best Contact Number | ${ wills_estates_phone_number }
-    Email Address | ${ wills_estates_email_address }
-    % if wills_estates_other_party_yesno == 'Yes':
-    Other Party | ${ wills_estates_other_party_name }
-    %endif
-  
-  % if wills_estates_email_sent_ok:
-  Once again, thank you for contacting MSM Legal, and we look forward to speaking with you soon. 
-  % else:
-  There was a problem sending the e-mail.
-  % endif
-buttons:
-  - Exit: exit
-    url: https://www.msmlegal.com.au/
-  - Restart: restart
+objects:
+  - willsUser: Individual
+---
+# this is the code that drives the Wills pathway
+code: |
+  # Compile Issue List - normally a list with `other` is displayed as 
+  # "Item one, Item two, and Other". This code replaces `other` with 
+  # the description the user provided so it is displayed as 
+  # "Item one, Item two, and User description".
+  # We persist the original selection, in order to preserve value 
+  # when user revisits the screen - if we don't do this `Other` will 
+  # be deselected when the user returns to the question to edit their answers
+  willsUser.has_selected_other = willsUser.issues_Selected['Other']
+  if willsUser.has_selected_other:
+    # if `other` is selected, hide it 
+    willsUser.issues_Selected['Other'] = False
+    # get the selected issues, excluding `Other` which is False now
+    willsUser.issues_Compiled = willsUser.issues_Selected.true_values() 
+    # Now we reverse the state back to its original value as though it remained intact
+    # we use this work-around to be able to get `true_values()` without `Other`, instead of having to clone the DADict so that we don't mutate the actual response.
+    willsUser.issues_Selected['Other'] = True
+    # add user description to the end of the list
+    willsUser.issues_Compiled.append(willsUser.issues_Other)
+  else:
+    willsUser.issues_Compiled = willsUser.issues_Selected.true_values() 
+
+  ## Extract Filenames ##
+  # if we try to display the documents using mako in the review screen, 
+  # Docassemble will converts the files to images or will display the text
+  # if the file is .txt which is unwanted. Therefore, we create a sub list 
+  # that only contains the file name and we render this list to user.
+  if willsUser.documents is not None:
+    # we only run this if the user has supplied at least one document
+    willsUser.documents_display = [doc.filename for doc in willsUser.documents]
+
+  # show review screen for user to confirm their answers 
+  MSM_Wills_Screen_ReviewAnswers
+  # Send confirmation email
+  MSM_Wills_Email_receipt_confirmation_sent
+  MSM_Pathway_Wills = True
 ---
 # This question block asks the user which legal issue they may be having
 question: Potential Wills and Estates Issues
 subquestion: |
-  Which of the following Wills and Estates issue(s) do you need help with?
+  Which of the following Wills and Estates issues do you need help with?
 fields:
-  - no label: wills_estates_options
+  - no label: willsUser.issues_Selected
     datatype: checkboxes
     choices:
       - I would like to discuss a new Will, Advance Care Directive, or Power of Attorney
@@ -63,145 +55,142 @@ fields:
       - The executor is not sharing a copy of the Will or details of the Estate with me and I need advice
       - The executor is refusing to lodge an application for probate and I need advice
       - I have been left out of a Will and I need advice
+      - Other
     none of the above: False
-    default: 'I would like to discuss a new Will, Advance Care Directive, or Power of Attorney'
-  - Please upload any relevant documents if you have them: wills_estates_user_documents 
+  - Please explain what other issues you have: willsUser.issues_Other
+    datatype: area
+    show if: willsUser.issues_Selected['Other']
+  - Please upload any relevant documents if you have them: willsUser.documents
     datatype: files
     required: False
 ---
 # This question block asks the user to fill in their personal information
 question: Personal Information
 subquestion: |
-  Please fill out your personal information.
+  Please fill out your personal information
 fields:
-  - First Name: wills_estates_first_name
-    default: Zoila
-  - Other Given Name(s): wills_estates_given_name
+  - First Name: willsUser.name.first
+  - Other Given Name(s): willsUser.name.other
     required: False
-  - Last Name: wills_estates_last_name
-    default: Kautzer
-  - Date of Birth: wills_estates_DOB
-    datatype: date
-    default: 21/06/1984
-    required: False
-  - Email Address: wills_estates_email_address
+  - Last Name: willsUser.name.last
+  - Email Address: willsUser.email
     datatype: email
-    default: kautzerfamily@applicant.com
-  - Is your best contact phone number based in Australia?: phone_international
-    datatype: noyesradio
-    default: False
-  - What country is associated with your best contact phone number?: phone_country
-    code: countries_list()
-    show if: phone_international
-  - What is your best contact phone number?: wills_estates_phone_number
-    default: 8523 1633
-    help: |
-      E.g. 0491 579 455
----
-# This code sets the default country for the users phone number
-code: |
-  if not phone_international:
-    phone_country = 'Aus'
+  - Contact Phone Number: willsUser.phone_number
+    html: |
+      <span style="font-size: 9pt; margin-bottom: 1pt;">
+      <p style="margin-bottom: 1pt;">Please include country code</p>
+      <p>eg:&nbsp;+61&nbsp;498&nbsp;765&nbsp;432</p>
+      </span>
 ---
 #This block asks if there are any other parties involved in the dispute/matter
 question: |
-  Other Party Details 
+  Other Party's Details
 fields:
-  - Is there any Other Party involved in the matter?: wills_estates_other_party_yesno
-    datatype: radio
-    default: 'No'
-    choices: 
-      - Yes
-      - No
-  - Please provide their Full Name: wills_estates_other_party_name
-    required: False
-    default: William Dispute
-    show if:
-      variable: wills_estates_other_party_yesno
-      is: 'Yes'
+  - Is there any other party involved in the matter?: willsUser.other_party_involved
+    datatype: yesnoradio
+  - Other party's full name: willsUser.other_party_fullName
+    show if: willsUser.other_party_involved
     help: |
       MSM Legal require this information to check for any conflicts of interest.
 ---
-#This is the review question block for the wills and estates path 
+#This is the review question block for the wills and estates path
 skip undefined: False
 question: |
-  Review your answers
+  Please review your answers before submitting
 subquestion: |
-  Thank you for using the MSM Online Client Intake Form!
-  
-  Your responses are shown below.
-  
-  - If you have made a mistake, click **Revisit** to fix the mistake.
-  
-  - If you are happy with the details you have provided, click **Continue**.
+
+  If you have made a mistake click **Edit** to fix.
+
 review:
-  - Revisit: wills_estates_first_name
+  - note: |
+      <br/>
+      #### Personal information
+  - Edit: willsUser.name.first
     button: |
-      You said your Name was **${wills_estates_first_name} ${wills_estates_given_name} ${wills_estates_last_name}**
-  - Revisit: wills_estates_DOB
+      Name: **${ willsUser.name }**
+
+      Phone number: **${willsUser.phone_number}**
+
+      Email: **${willsUser.email}**
+  - note: |
+      <br/>
+      #### Issues
+  - Edit: willsUser.issues_Selected
     button: |
-      You said your Date of Birth was **${format_date(wills_estates_DOB, format=' d MMMM YYYY') }**
-  - Revisit: wills_estates_phone_number
+      Your ${noun_plural('reason', len( willsUser.issues_Compiled ))} for contacting us: 
+
+      % for issue in add_separators(willsUser.issues_Compiled):
+      - **${issue}**
+      % endfor
+  - note: |
+      <br/>
+      #### Documents
+  - Edit: willsUser.documents
     button: |
-      You provided your Phone Number as **${wills_estates_phone_number}**
-  - Revisit: wills_estates_email_address
+      % if defined('willsUser.documents_display'):
+
+      You have supplied **${len(willsUser.documents)} ${noun_plural('document', len(willsUser.documents))}**:
+
+      % for doc in willsUser.documents_display:
+      - **${doc}**
+      % endfor
+
+      % for doc in willsUser.documents:
+      - ${doc}
+      % endfor
+
+
+      % else:
+      You have **NOT** provided any documents
+      % endif
+  - note: |
+      <br/>
+      #### Other party
+  - Edit: willsUser.other_party_involved
     button: |
-      You provided your Email as **${wills_estates_email_address}**
-  - Revisit: wills_estates_options
-    button: |
-      You mentioned that your Purpose of Enquiry was **${wills_estates_options.true_values()}**
-  - Revisit: wills_estates_user_documents
-    button: |
-      Your Documents
-      
-      ${wills_estates_user_documents}
-  - Revisit: wills_estates_other_party_yesno
-    button: |
-      You provided Other Party as **${wills_estates_other_party_yesno}** 
-continue button field: WE_review_answers
+      % if willsUser.other_party_involved:
+
+      **${willsUser.other_party_fullName.upper()}**
+
+      % else:
+
+      You indicated that **NO** other party is involved.
+
+      % endif
+continue button field: MSM_Wills_Screen_ReviewAnswers
+continue button label: Confirm and Submit
 ---
-#This creates a DAList to attach the users uploaded documents for the wills and estates path
-objects:  
-  - wills_estates_documents_to_send:  DAList.using(auto_gather = False)  
----
-#This code block controls the documents to be sent via email to the user and MSM Legal for the wills and estates path
-code:  | 
-  wills_estates_documents_to_send.append(MSM_Legal_Answer_Template_Wills)
-  wills_estates_documents_to_send.append(wills_estates_user_documents)
-  wills_estates_documents_to_send.gathered=True
----
-# this code block runs the email function for the wills and estates path
+#This code block compiles the documents due to be sent via email upon submission to the user and MSM Legal for the wills and estates path
 code: |
-  if wills_estates_user_documents != None:
-    wills_estates_email_sent_ok = send_email(to=wills_estates_email_address,bcc=['kell0481@flinders.edu.au'], template=notification, attachments=wills_estates_documents_to_send)
-  else:
-    wills_estates_email_sent_ok = send_email(to=wills_estates_email_address,bcc=['kell0481@flinders.edu.au'], template=notification, attachments=MSM_Legal_Answer_Template_Wills)
----
-#this is the email template that the user recieves for the wills and estates path
-template: notification
-subject: |
-  MSM Legal Client Intake Form for ${ wills_estates_first_name } ${ wills_estates_last_name }.
-content: |
-  Hello ${ wills_estates_first_name } ${ wills_estates_last_name }, 
-  
-  Thank you for contacting MSM Legal regarding your matter. We have received your enquiry and one of our team members will be in touch shortly.
-  
-  For your reference, please find attached a copy of what we have recieved.
-  
-  Should you have any questions or concerns, please do not hesitate to contact us on (08) 8161 5088 or via email at mail@msmlegal.com.au
-  
-  Kind Regards, 
-  
-  MSM Legal
+  if willsUser.documents is not None:
+    # attach user supplied documents and the compiled answers
+    willsUser.email_attachments = willsUser.documents
+    # prepend the answers
+    willsUser.email_attachments.insert(0, MSM_Wills_Attachment_compiledAnswers.pdf)
+  else: 
+    # if no documents were provided we only attach the answers
+    # note that we access `.pdf` this is a DAFile whereas the object is DAFileCollection
+    willsUser.email_attachments =  MSM_Wills_Attachment_compiledAnswers.pdf
 ---
 # This block controls the PDF attachment for the wills estates email
-attachment: 
-  - name: legal answers 
-    filename: ${ wills_estates_first_name } ${ wills_estates_last_name } Answers
-    variable name: MSM_Legal_Answer_Template_Wills
-    description: | 
+attachment:
+  - name: legal answers
+    filename: ${ willsUser.name } Answers
+    variable name: MSM_Wills_Attachment_compiledAnswers
+    description: |
       contains the answers entered by the user
     docx template file: MSM_Legal_Answer_Template_Wills.docx
-    valid formats: 
+    valid formats:
       - pdf
 ---
+# this code block sends the confirmation email for the wills and estates path
+code: |
+  # the email template referes to `user.name` to avoid Docassemble seeking its definition, we point `user` to  `willsUser`.
+  user = willsUser
+  MSM_Wills_Email_receipt_confirmation_sent = send_email(to=willsUser,
+                                                          sender=MSMLegal_noreply,
+                                                          reply_to=MSMLegal_noreply,
+                                                          template=MSM_Template_Email_ReceiptConfirmation,
+                                                          attachments=willsUser.email_attachments)
+---
+

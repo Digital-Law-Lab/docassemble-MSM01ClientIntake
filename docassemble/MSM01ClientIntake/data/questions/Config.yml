@@ -1,0 +1,107 @@
+# This File is responsible for configuring the interview (including features and default screen parts)
+
+# This code block attributes ownership and sets the name of the interview displayed on the web tab as well as on the app
+metadata:
+  title: |
+    MSM Legal Online Client Intake
+  short title: |
+    MSM Legal
+  description: |
+    A client intake interview
+  authors:
+    - name: Brandon Trimboli
+      organisation: Flinders University
+    - name: Caitlin Driscoll
+      organisation: Flinders University
+    - name: Niamh Keller
+      organisation: Flinders University
+    - name: Paige Bowers
+      organisation: Flinders University
+    - name: Shai Barboza
+      organisation: Flinders University
+    - name: Shelley Toth
+      organisation: Flinders University
+  show login: False
+  exit url: https://google.com
+  exit link: exit
+  footer: |
+    <div id="DLL_attribution-container">
+      <div id="DLL_attribution-text">
+        Developed by Flinders University in collaboration with MSM Legal Pty Ltd
+      </div>
+      <div id="DLL_attribution-logo">
+        <img src="https://staff.flinders.edu.au/etc.clientlibs/flinders/clientlibs/clientlib-site/resources/images/flinderuni_main_logo_black.png" style="height: 100%;">
+      </div>
+    </div>
+---
+features:
+  debug: False
+  css:
+    - Colour_Scheme.css
+    - DLL_Styles.css
+  hide standard menu: True
+  question back button: True
+  navigation back button: False
+---
+objects:
+  - MSM_Logo: DAStaticFile.using(filename='MSM_Logo2.png')
+---
+mandatory: True
+code: |
+  set_parts(logo='<img src="' + MSM_Logo.url_for() + '" style="height: 75px;">')
+---
+# Store information about MSM Legal in this object
+objects:
+  - MSMLegal: Individual
+  - MSMLegal_noreply: Individual
+---
+# This block sets the information for MSM Legal
+code: |
+  # Name
+  MSMLegal.name.uses_parts = False
+  MSMLegal.name.text = "MSM Legal"
+
+  # Contact phone
+  MSMLegal.phone_number = '+61 8 8161 5088'
+
+  # Email addresses
+  MSMLegal.email = 'mail@msmlegal.com.au'
+---
+# This sets for MSMLegal_noreply.
+# For some reason send_email() wants name.first (instead of name.text)
+code: |
+  MSMLegal_noreply.name.first = 'MSM Legal No Reply'
+  MSMLegal_noreply.email = 'noreply@dll.org.au'
+---
+# Outlook can't include CSS styles so we need to embed styles and other content directily into the email body.
+# We do this by separating out the relevant parts (styles, signatures) into templates which we can include
+# in the various email templates we use
+#
+# This defines the styles at the head of each email
+template: MSMLegal_Email_Styles
+content: |
+  <style>
+    p.MsoNormal, li.MsoNormal, div.MsoNormal {
+      margin: 0cm;
+      font-size: 11.0pt;
+      font-family: "Arial",sans-serif;
+      line-height: 1.25em;
+      margin-bottom: 1.5em
+    }
+    p MsoNormal_nospace {
+      margin-bottom: 1em;
+    }
+  </style>
+---
+# Sets out the email signature
+template: MSMLegal_Email_Signature
+content: |
+  <p class="MsoNormal"><b>${MSMLegal.name}</b></p>
+  <p class="MsoNormal"><span style="margin-bottom: 0.5em;"><b>e.</b><a href="${MSMLegal.email}">${MSMLegal.email}</a></span></p>
+  <p class="MsoNormal"><span style="margin-bottom: 0.5em;"><b>t.</b>${MSMLegal.phone_number}</span></p>
+  <p class="MsoNormal"><span style="margin-bottom: 0.5em;">117 Wright Street, Adelaide SA 5000 Australia</span></p>
+  <p class="MsoNormal"><b><a href="https://msmslegal.com.au">msmlegal.com.au</a></b></p>
+  <p class="MsoNormal"><i><span style="font-size: 8.5pt; margin-bottom: 0.5em;">Liability limited by a scheme approved under Professional Standards Legislation.</span></i></p>
+  <p class="MsoNormal"><i><span style="font-size: 8.5pt;">The contents of this email and any attachments are confidential and may be protected by legal professional privilege. If you have received this email in error please delete the document. Views expressed in this email are solely those of the author and do not necessarily represent those of MSMLegal. No warranty is made that this email is free from error, computer virus or other defect.</span></i></p>
+---
+
