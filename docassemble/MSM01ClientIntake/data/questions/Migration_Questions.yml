@@ -63,16 +63,17 @@ code: |
 ---
 #This is the first question of the migration path - asks if the user is the main applicant
 question: |
-  Are you the {Main Applicant}?
+  Are You the Main Applicant?
 subquestion: |
+    Select **Yes** if you are the person needing help with your visa or other migration issue.
+    
+    Select **No** if you are applying on someone else's behalf.
 fields:
   - no label: MSM_Migration_User_is_main_applicant
     datatype: yesnoradio
-terms:
-  Main Applicant: |
-    Main Applicant is the person needing help with their visa or other migration issue. If you are applying on someone else's behalf, you are not the Main Applicant.
 ---
 code: |
+  user.question_title = 'Your Personal Information'
   # set the question tag for personal details screen 
   user.ask_details_question = "Please fill out your details below"
 
@@ -86,8 +87,9 @@ code: |
   user.email_required = not MSM_Migration_User_is_main_applicant
 ---
 code: |
+  applicant.question_title = "Main Applicant's Information"
   # set the question tag for personal details screen 
-  _your_or_main_applicant = "your" if MSM_Migration_User_is_main_applicant else "the {Main Applicant}'s" 
+  _your_or_main_applicant = "your" if MSM_Migration_User_is_main_applicant else "the Main Applicant's" 
   applicant.ask_details_question = "Please fill out " +  _your_or_main_applicant  + " personal information below"
 
   # the applicant's address is always required
@@ -102,6 +104,8 @@ code: |
 # generic personal detials questions for both user and main applicant
 generic object: Individual
 question: |
+  ${ x.question_title }
+subquestion: |
   ${ x.ask_details_question }
 fields:
   - First name: x.name.first
@@ -113,32 +117,9 @@ fields:
   - Email Address: x.email
     datatype: email
     required: x.email_required
-  - Contact phone number?: x.phone_number
+  - Best contact number: x.phone_number
     help: |
-      E.g. +61498765432
-      Please include country code as well
-  - Current Address: x.address.address
-    required: x.address_required
-    help: |
-      E.g. 123 Main Street
-  - Unit/Apartment: x.address.unit
-    help: |
-      E.g., Unit 12, Apartment 6
-    required: False
-  - Suburb/City: x.address.city
-    required: False
-  - State/Province: x.address.state
-    required: False
-    help: |
-      E.g. South Australia
-  - Postcode/Zip: x.address.postal_code
-    required: False
-    help: |
-      E.g. 5000
-  - Country: x.address.country
-    code: |
-      countries_list()
-    required: True
+      Please include country code eg,&nbsp;+61&nbsp;498&nbsp;765&nbsp;432
   - Passport Country: x.passport_country
     code: |
       countries_list()
@@ -147,9 +128,6 @@ fields:
     show if:
       code: |
         x.passport_country_required
-terms:
-  Main Applicant: |
-    The person on whose behalf you are contacting us.
 ---
 # ask if there are any family members applying/migrating with applicant
 question: Family Members
@@ -164,7 +142,7 @@ fields:
 ---
 # If User is NOT the main applicant then this screen will ask for their relationship to the MA
 if: user is not applicant
-question: How are you related to ${applicant.name.first}?
+question: Who are you in relationshop to ${applicant.name.first}?
 fields:
   - I am ${applicant.name.first}'s: user.relation_to_applicant
     hint: |
@@ -208,6 +186,8 @@ fields:
       - Visa refusal
       - Visa cancellation
       - Citizenship
+      - Appeals to Administrative Appeals Tribunal
+      - Judicual Review of a Tribunal Decision
       - Other
     none of the above: False
   - Please provide details: applicant.other_purpose
@@ -232,6 +212,7 @@ fields:
       - Mitchell Simmons
       - Zainab Al-Sweedy
       - Mark Sekerin
+      - Jaskirat Singh
       - Let MSM assign someone: a person assigned by MSM
 ---
 # This question will ask what appointment type the user would like to book.
@@ -241,7 +222,7 @@ fields:
     datatype: radio
     choices:
       - In person
-      - Virtually (Zoom)
+      - Virtually
 ---
 # Review the user's answers
 skip undefined: False
@@ -258,13 +239,9 @@ review:
 
       Email: **${user.email}**
 
-      Date of birth: **${ format_date(user.birthdate, format=' d MMMM YYYY') }**
+      Date of birth: **${ format_date(user.birthdate, format='d MMMM YYYY') }**
 
-      Address: 
-
-      **${ user.address.block() }**
-
-      Contact number: **${ user.phone_number }**
+      Best contact number: **${ user.phone_number }**
   - note: |
       <br>
       #### Relationship to ${applicant}
@@ -284,17 +261,13 @@ review:
     button: |
       Full name: **${applicant.name}**
 
-      Date of birth: **${ format_date(applicant.birthdate, format=' d MMMM YYYY') }**
+      Date of birth: **${ format_date(applicant.birthdate, format='d MMMM YYYY') }**
 
       % if applicant.email != "":
       Email address: **${applicant.email}**
       % endif 
 
-      Address: 
-
-      **${ applicant.address.block() }**
-
-      Contact number: **${ applicant.phone_number }**
+      Best contact number: **${ applicant.phone_number }**
   - note: |
       <br/>
       #### Passport country
@@ -306,7 +279,7 @@ review:
       #### Family members
   - Edit: applicant.family_members_migrating
     button: |
-      Other family members **will ${'NOT' if applicant.family_members_migrating == 'No' else ''}** be migrating with ${applicant.subject()}
+      Other family members **will**  ${'**NOT**' if applicant.family_members_migrating == 'No' else ''} be migrating with ${applicant.subject()}
   - note: |
       <br/>
       #### ${ applicant.possessive('visa details', capitalize=True) }
