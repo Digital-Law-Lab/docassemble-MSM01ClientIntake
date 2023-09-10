@@ -135,6 +135,10 @@ review:
       - **${doc}**
       % endfor
 
+      % for doc in willsUser.documents:
+      - ${doc}
+      % endfor
+
 
       % else:
       You have **NOT** provided any documents
